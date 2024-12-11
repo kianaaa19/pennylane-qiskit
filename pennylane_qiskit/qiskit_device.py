@@ -649,8 +649,22 @@ class QiskitDevice(Device):
         """
         # the Estimator primitive takes care of diagonalization and measurements itself,
         # so diagonalizing gates and measurements are not included in the circuit
+        session = session
+        from qiskit_ibm_runtime import QiskitRuntimeService, Sampler
+
+        QiskitRuntimeService.save_account(
+            channel="ibm_quantum",
+            token="d0cac47869d5e9302492b675cbd533bfd5912a0c406cc69e9255920b8204a7fa62d9089b3c9f4392889972c7ef485048db4add8d9b6b53f4744e8a80e8ba26b9",
+            set_as_default=True,
+            # Use 'overwrite=True' if you're updating your token.
+            overwrite=True,
+        )
+         # Load saved credentials
+        n_qubits = 127
+        service = QiskitRuntimeService()
+        backend = service.least_busy(min_num_qubits=n_qubits)
         qcirc = [circuit_to_qiskit(circuit, self.num_wires, diagonalize=False, measure=False)]
-        estimator = Estimator(session=session)
+        estimator = Estimator(mode=backend)
 
         pauli_observables = [mp_to_pauli(mp, self.num_wires) for mp in circuit.measurements]
         compiled_circuits = self.compile_circuits(qcirc)
